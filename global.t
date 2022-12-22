@@ -1,29 +1,49 @@
 -- global.t
-local function prinT(t)
+local function prinT(t) -- for debug
     for k, v in pairs(t) do
         print(k,v)
     end
 end
 
+local function resolveType(val)
+    local ty;
+    local t = type(val)
+    if t == "string" then
+        ty = &int8
+    elseif t == "number" then
+        ty = terralib.isintegral(val) and int or double
+    end
+    return ty
+end
+
 local globals = {}
 return {
+    name = "global";
     entrypoints = {"gvar", "global"};
     keywords = {};
     statement = function(self, lex)
         if lex:nextif"gvar" then
             local name = lex:expect(lex.name).value
-            lex:expect":"
-            local ty = lex:luaexpr()
+            local ty
             local val
+            if lex:nextif":" then
+                ty = lex:luaexpr()
+            end
             if lex:nextif"=" then
-                val = lex:terraexpr()
-                print(val(_G))
+                val = lex:luaexpr()
+            end
+            if not ty and not val then
+                error"at least value must be supplied to gvar!"
             end
             return function(env_fn)
-                ty = ty(_G)
                 if val then
-                    return global(ty, val(_G))
+                    val = val(_G)
+                    if not ty then
+                        ty = resolveType(val)
+                    end
+                    return global(ty, val)
                 else
+                    ty = ty(_G)
                     return global(ty)
                 end
             end, {name}
@@ -33,7 +53,7 @@ return {
             local val
             
             if globals[name] then 
-                error("redeclaration of global variable "..name.." on line "..tostring(token.linenumber))
+                error(token.filename.." redeclaration of global variable "..name.." on line "..tostring(token.linenumber))
             end
             globals[name] = name
             if lex:nextif"=" then
@@ -43,7 +63,7 @@ return {
                 if val then
                     return val
                 else
-                    return false
+                    return nil
                 end
             end, {name}
         end
