@@ -8,7 +8,7 @@
 
 First one is achieved by creating keyword global
 
-'''Terra
+'''terra
     global a = "b"
 '''
 
