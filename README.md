@@ -9,8 +9,8 @@ of it's lexer.
 
 ## The following repository now contains:
 
-    macro.t - a simplistic macro keyword for replacing unnecessary
-    Terra shennanigans with macro(function()) form
+macro.t - a simplistic macro keyword for replacing unnecessary
+Terra shennanigans with macro(function()) form
 
-    global.t - adds ability to declare lua global variables and tracks thier declaration
-    also provides easy to use ability to declare terra globals with a "gvar" keyword 
+global.t - adds ability to declare lua global variables and tracks thier declaration
+also provides easy to use ability to declare terra globals with a "gvar" keyword 
