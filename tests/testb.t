@@ -11,7 +11,7 @@ local c = terralib.includecstring[[
 use c
 
 local b = {}
-print(rawget(_G,"printf"))
+
 terra b.ret()
     printf"retrun\n"
 end

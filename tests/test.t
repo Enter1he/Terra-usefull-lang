@@ -14,7 +14,8 @@ local b = global(&int)
 import"lib.global"
 import"lib.use"
 -- print(_G)
-
+local a;
+local a;
 use c
 
 use "testb"

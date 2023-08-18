@@ -15,7 +15,7 @@ local function resolveType(val)
     end
     return ty
 end
-
+local global = terralib.global
 local globals = {}
 return {
     name = "global";
@@ -27,22 +27,24 @@ return {
             local ty
             local val
             if lex:nextif":" then
-                ty = lex:luaexpr()(_G)
+                ty = lex:luaexpr()
+                
             end
             if lex:nextif"=" then
-                val = lex:luaexpr()(_G)
+                val = lex:terraexpr()
             end
             if not ty and not val then
                 error"at least value must be supplied to gvar!"
             end
             return function(env_fn)
+                local env = env_fn()
                 if val then
                     if ty then 
-                        return global(ty, val)
+                        return global(ty(env), val(env))
                     end
-                    return global(val)
+                    return global(val(env))
                 else
-                    return global(ty)
+                    return global(ty(env))
                 end
             end, {name}
         elseif lex:nextif"global" then

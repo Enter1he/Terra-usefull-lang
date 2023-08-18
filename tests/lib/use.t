@@ -86,16 +86,18 @@ local builtin = {
     vectorof = true;
 }
 
-local function copyG()
+local function copyG(G)
     local t = {}
-    for k,v in pairs(_G) do
+    for k,v in pairs(G) do
         t[k] = v
     end
     return t
 end
+local nspaces = {}
 
 local function statement(_,lex)
-    lex:expect"use"
+    local tok = lex:expect"use"
+    local filename = tok.filename
     local module, name, tab, stab
     if lex:matches(lex.name) then
         name = lex:expect(lex.name).value
@@ -121,8 +123,9 @@ local function statement(_,lex)
     end
     
     return function(env_fn)
-        local c_g = copyG()
         local env = env_fn()
+        nspaces[filename] = copyG(env._G)
+        local c_g = nspaces[filename]
         local m = module or env[name]
         local k
         while tab do
@@ -137,16 +140,18 @@ local function statement(_,lex)
             error"'use' only works with modules returning table!"
         end
         for k,v in pairs(m) do
-            if rawget(env._G, k) then
+            if rawget(c_g, k) then
                 -- print("warning!: use overrides field '"..tostring(k).."' in global scope!")
             end
             if builtin[k] then
                 print("changes for essential global field '"..tostring(k).."' ignored!")
             else
-                rawset(_G, k, v)
+                rawset(c_g, k, v)
             end
         end
-    end
+        setfenv(2, c_g)
+        return c_g
+    end, {"_G"}
 end;
 
 return {
